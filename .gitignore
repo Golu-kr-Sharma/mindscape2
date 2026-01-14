@@ -1,0 +1,79 @@
+# ===============================
+# Dependencies
+# ===============================
+node_modules/
+.pnp/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ===============================
+# Build & Production
+# ===============================
+.next/
+out/
+build/
+dist/
+
+# ===============================
+# Testing
+# ===============================
+coverage/
+
+# ===============================
+# Environment Variables (Secrets)
+# ===============================
+.env
+.env.*
+!.env.example
+
+# ===============================
+# Firebase
+# ===============================
+.firebase/
+firebase-debug.log
+firestore-debug.log
+database-debug.log
+storage-debug.log
+
+# Firebase Admin SDK keys
+serviceAccountKey.json
+*.json.private
+
+# ===============================
+# Logs
+# ===============================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===============================
+# OS / Editor
+# ===============================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ===============================
+# TypeScript
+# ===============================
+*.tsbuildinfo
+next-env.d.ts
+
+# ===============================
+# Misc
+# ===============================
+*.pem
+*.key
+.env
+.env.local
+.env.*.local
+node_modules/
+.next/
+dist/
+build/
