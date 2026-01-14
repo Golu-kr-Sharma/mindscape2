@@ -8,6 +8,20 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    turbopack: {
+      resolveAlias: {
+        '@': './',
+      },
+    },
+  },
+  webpack: (config, { isServer }) => {
+    config.externals = {
+      ...config.externals,
+      '@supabase/supabase-js': '@supabase/supabase-js',
+    };
+    return config;
+  },
   images: {
     remotePatterns: [
       {

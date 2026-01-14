@@ -31,6 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize auth state on mount
   useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     const initAuth = async () => {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -74,21 +79,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         if (session?.user) {
           setSupabaseUser(session.user);
-          const { data: profile, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+          try {
+            const { data: profile, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
 
-          if (profile) {
-            setUser({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
-              avatar: profile.avatar,
-            });
-          } else if (error) {
-            console.warn('Could not fetch user profile:', error.message);
+            if (profile) {
+              setUser({
+                id: profile.id,
+                name: profile.name,
+                email: profile.email,
+                avatar: profile.avatar,
+              });
+            } else {
+              // Profile doesn't exist yet, create from session
+              setUser({
+                id: session.user.id,
+                name: session.user.user_metadata?.name || 'User',
+                email: session.user.email || '',
+              });
+            }
+          } catch (err) {
+            console.warn('Could not fetch user profile, using session data');
             setUser({
               id: session.user.id,
               name: session.user.user_metadata?.name || 'User',
@@ -108,49 +122,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const login = async (email: string, password: string) => {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     });
-    if (error) throw error;
+    
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Invalid email or password. Please check and try again.');
+      }
+      if (error.message.includes('Email not confirmed')) {
+        throw new Error('Please confirm your email before logging in.');
+      }
+      throw new Error(error.message || 'Login failed. Please try again.');
+    }
   };
 
   const signup = async (email: string, password: string, name: string) => {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    if (!email || !password || !name) {
+      throw new Error('All fields are required');
+    }
+
     const { data: { user: authUser }, error: signupError } = await supabase.auth.signUp({
-      email,
+      email: email.trim().toLowerCase(),
       password,
       options: {
         data: {
           name,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        // Don't require email confirmation
+        emailRedirectTo: undefined,
       },
     });
 
-    if (signupError) throw signupError;
+    if (signupError) {
+      if (signupError.message.includes('already registered')) {
+        throw new Error('This email is already registered. Please log in instead.');
+      }
+      throw new Error(signupError.message || 'Sign up failed. Please try again.');
+    }
 
     if (authUser) {
       // Create user profile in database
       const { error: profileError } = await supabase.from('users').insert({
         id: authUser.id,
-        email,
+        email: email.trim().toLowerCase(),
         name,
         avatar: null,
         created_at: new Date().toISOString(),
       });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Don't throw here - user is already created in auth, just missing profile
+        // They can still log in
+      }
 
       setSupabaseUser(authUser);
       setUser({
         id: authUser.id,
         name,
-        email,
+        email: email.trim().toLowerCase(),
       });
     }
   };
 
   const logout = async () => {
+    if (!supabase) throw new Error('Supabase client not initialized');
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     setUser(null);
