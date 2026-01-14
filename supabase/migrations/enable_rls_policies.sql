@@ -20,7 +20,7 @@ ON public.users
 FOR SELECT
 USING (auth.uid() = id);
 
--- Policy 2: Users can CREATE their own profile during signup
+-- Policy 2: Users can CREATE their own profile during signup (with FORCE for auth trigger)
 CREATE POLICY "users_insert_own"
 ON public.users
 FOR INSERT
