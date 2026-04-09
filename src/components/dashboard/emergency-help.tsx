@@ -19,11 +19,11 @@ const helplineCards = [
 ];
 
 
-export function EmergencyHelp() {
+export function EmergencyHelp({ className }: { className?: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Card className="glass-card flex flex-col items-center justify-center text-center p-6 bg-destructive/20 border-destructive hover:bg-destructive/30 cursor-pointer transition-colors">
+        <Card className={`glass-card flex flex-col items-center justify-center text-center p-6 bg-destructive/20 border-destructive hover:bg-destructive/30 cursor-pointer transition-colors ${className || ''}`}>
           <CardHeader className="p-0 mb-4">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/80">
               <ShieldAlert className="h-6 w-6 text-destructive-foreground" />

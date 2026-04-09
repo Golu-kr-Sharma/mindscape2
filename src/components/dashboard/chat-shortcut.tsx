@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
-export function ChatShortcut() {
+export function ChatShortcut({ className }: { className?: string }) {
   return (
-    <Card className="glass-card flex flex-col items-center justify-center text-center p-6">
+    <Card className={`glass-card flex flex-col items-center justify-center text-center p-6 ${className || ''}`}>
       <CardHeader className="p-0 mb-4">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
           <Bot className="h-6 w-6 text-primary" />
