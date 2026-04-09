@@ -9,10 +9,17 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    // turbopack config removed as it's not valid here
+    turbopack: {
+      resolveAlias: {
+        '@': './',
+      },
+    },
   },
   webpack: (config, { isServer }) => {
-    // Removed problematic externals config
+    config.externals = {
+      ...config.externals,
+      '@supabase/supabase-js': '@supabase/supabase-js',
+    };
     return config;
   },
   images: {
