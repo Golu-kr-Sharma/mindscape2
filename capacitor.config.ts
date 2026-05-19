@@ -6,8 +6,9 @@ const config: CapacitorConfig = {
   webDir: 'build',
   server: {
     // Use emulator host mapping for local development.
-    url: 'http://10.0.2.2:9003',
-    cleartext: true,
+    // Use remote Vercel deployment
+    url: 'https://newmindscap.vercel.app',
+    cleartext: false,
   },
 };
 
