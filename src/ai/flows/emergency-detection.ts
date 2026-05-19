@@ -63,6 +63,15 @@ const detectEmergencyFlow = ai.defineFlow(
     outputSchema: EmergencyDetectionOutputSchema,
   },
   async input => {
+    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+    if (!key || key.includes('your_') || key.includes('replace')) {
+      // API key not configured — return a safe default (no emergency detected)
+      return {
+        emergencyDetected: false,
+        helplines: [],
+      };
+    }
+
     const {output} = await emergencyDetectionPrompt(input);
     return output!;
   }

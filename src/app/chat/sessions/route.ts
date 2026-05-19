@@ -1,34 +1,33 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getAuthToken, verifyAuthToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    const token = getAuthToken(request);
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const payload = verifyAuthToken(token);
     const { title } = await request.json();
+    const db = await connectToDatabase();
+    const sessions = db.collection('chat_sessions');
+    const now = new Date();
 
-    const { data, error } = await supabase
-      .from('chat_sessions')
-      .insert({
-        user_id: user.id,
-        title: title || 'New Chat',
-      })
-      .select()
-      .single();
+    const session = {
+      userId: payload.sub,
+      title: title || 'New Chat',
+      createdAt: now,
+      updatedAt: now,
+    };
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const result = await sessions.insertOne(session);
 
-    return NextResponse.json(data);
+    return NextResponse.json({
+      id: result.insertedId.toString(),
+      ...session,
+    });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
@@ -39,27 +38,29 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    const token = getAuthToken(request);
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
-      .from('chat_sessions')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
+    const payload = verifyAuthToken(token);
+    const db = await connectToDatabase();
+    const sessions = db.collection('chat_sessions');
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const data = await sessions
+      .find({ userId: payload.sub })
+      .sort({ updatedAt: -1 })
+      .toArray();
 
-    return NextResponse.json(data);
+    return NextResponse.json(
+      data.map((item) => ({
+        id: item._id.toString(),
+        userId: item.userId,
+        title: item.title,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      }))
+    );
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Internal server error' },

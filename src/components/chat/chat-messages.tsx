@@ -49,7 +49,7 @@ export function ChatMessages({ messages }: ChatMessagesProps) {
           
           {message.sender === 'user' && (
              <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.avatar} alt={user?.name} />
+              <AvatarImage src={user?.avatar ?? undefined} alt={user?.name} />
               <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
             </Avatar>
           )}
