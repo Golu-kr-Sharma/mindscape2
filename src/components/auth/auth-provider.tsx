@@ -78,7 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data: any = {};
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      throw new Error(`Login failed (${response.status}): ${response.statusText}`);
+    }
+
     if (!response.ok) {
       throw new Error(data.error || 'Login failed. Please check your credentials.');
     }
@@ -100,7 +107,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data: any = {};
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      throw new Error(`Sign up failed (${response.status}): ${response.statusText}`);
+    }
+
     if (!response.ok) {
       throw new Error(data.error || 'Sign up failed. Please try again.');
     }
