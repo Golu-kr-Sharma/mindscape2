@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: {
     // Use emulator host mapping for local development.
     // Use remote Vercel deployment
-    url: 'https://newmindscap.vercel.app',
+    url: 'https://mindscape2.vercel.app/',
     cleartext: false,
   },
 };
